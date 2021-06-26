@@ -1,0 +1,1 @@
+# Katas from http://codekata.com/
