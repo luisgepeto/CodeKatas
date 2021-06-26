@@ -8,7 +8,7 @@ namespace SpellChecker
     {
         public BloomFilterSpellChecker(BloomFilterSpellCheckerOptions options)
         {
-
+            
         }
 
         public Dictionary<string, bool> CheckByWords(string text)

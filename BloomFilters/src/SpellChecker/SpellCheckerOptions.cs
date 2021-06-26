@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace SpellChecker
 {
@@ -16,16 +16,17 @@ namespace SpellChecker
 
 
         //TODO We might want to construct a language configuration object to pass extra options such as source file configuration.
-        //Also to avoid shotgun surgery when adding a new language configuration
         public Language Language { get; }
-        private Dictionary<Language, string> _sourceDictionaryRelativePath = new Dictionary<Language, string>()
-        {
-            { Language.English, ""},
-            { Language.Spanish, ""}
-        };
-        public List<string> ReadSourceDictionary()
+        protected void LoadSourceDictionary(Action<string> loadAction)
         {
             throw new NotImplementedException();
         }
+
+        protected string GetSourceDictionaryFilePath()
+        {
+            var descriptionAttribute = (DescriptionAttribute)typeof(Language).GetField(Language.ToString()).GetCustomAttributes(typeof(DescriptionAttribute), false)[0];
+            return $"./SourceDictionaries/wordlist.{descriptionAttribute.Description}.txt";
+        }
     }
 }
+
