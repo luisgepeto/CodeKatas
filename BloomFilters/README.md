@@ -1,4 +1,4 @@
-# [Kata05: Bloom Filters]([http://codekata.com/kata/kata05-bloom-filters/)
+# [Kata05: Bloom Filters](http://codekata.com/kata/kata05-bloom-filters/)
 
 There are many circumstances where we need to find out if something is a member of a set, and many algorithms for doing it. If the set is small, you can use bitmaps. When they get larger, hashes are a useful technique. But when the sets get big, we start bumping in to limitations. Holding 250,000 words in memory for a spell checker might be too big an overhead if your target environment is a PDA or cell phone. Keeping a list of web-pages visited might be extravagant when you get up to tens of millions of pages. Fortunately, there’s a technique that can help.
 
