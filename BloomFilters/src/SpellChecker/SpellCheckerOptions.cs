@@ -1,5 +1,6 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace SpellChecker
 {
@@ -9,24 +10,41 @@ namespace SpellChecker
         {
             Language = Language.English;
         }
-        public SpellCheckerOptions(Language language)
+        public SpellCheckerOptions(Language language) : base()
         {
             Language = language;
         }
 
 
-        //TODO We might want to construct a language configuration object to pass extra options such as source file configuration.
+        /*TODO 
+         * We might want to construct a language configuration object in order to pass 
+         * extra options such as source file configuration, and handle dictionary 
+         * word loading i.e. different languages might have different sources
+         */
         public Language Language { get; }
-        protected void LoadSourceDictionary(Action<string> loadAction)
+        protected async Task LoadSourceDictionary()
         {
-            throw new NotImplementedException();
+            var filePath = GetSourceDictionaryFilePath();
+            using var file = new StreamReader(filePath);
+            string nextLine;
+            do
+            {
+                nextLine = await file.ReadLineAsync();
+                if (!string.IsNullOrWhiteSpace(nextLine))
+                {
+                    //TODO Should we care about multiple words in the same line?
+                    //TODO Should we care about lower case and upper case differences, as well as culture differences?
+                    LoadWord(nextLine.Trim().ToLowerInvariant());
+                }
+            }
+            while (nextLine != null);
         }
-
         protected string GetSourceDictionaryFilePath()
         {
             var descriptionAttribute = (DescriptionAttribute)typeof(Language).GetField(Language.ToString()).GetCustomAttributes(typeof(DescriptionAttribute), false)[0];
             return $"./SourceDictionaries/wordlist.{descriptionAttribute.Description}.txt";
         }
+        protected abstract void LoadWord(string word);
     }
 }
 
