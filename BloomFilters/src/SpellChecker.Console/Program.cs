@@ -1,4 +1,4 @@
-﻿using System;
+﻿using SpellChecker.Interfaces;
 
 namespace SpellChecker.Demo
 {
@@ -6,7 +6,8 @@ namespace SpellChecker.Demo
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            var options = new BloomFilterSpellCheckerOptions();
+            ISpellChecker spellChecker = new BloomFilterSpellChecker(options);
         }
     }
 }
