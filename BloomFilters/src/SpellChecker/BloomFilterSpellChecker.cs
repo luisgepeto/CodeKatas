@@ -5,6 +5,7 @@ using SpellChecker.Interfaces;
 
 namespace SpellChecker
 {
+    // Based on https://en.wikipedia.org/wiki/Bloom_filter
     public class BloomFilterSpellChecker : BaseSpellChecker, ISpellChecker
     {
         public static async Task<ISpellChecker> InitializeAsync(BloomFilterSpellCheckerOptions options)
@@ -26,7 +27,7 @@ namespace SpellChecker
 
         protected override void LoadWord(string word)
         {
-            throw new System.NotImplementedException();
+
         }
     }
 }

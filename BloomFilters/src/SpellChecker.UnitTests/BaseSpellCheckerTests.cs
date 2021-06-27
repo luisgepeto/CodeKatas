@@ -6,7 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace SpellChecker.UnitTests
 {
     [TestClass]
-    public class SpellCheckerTests
+    public class BaseSpellCheckerTests
     {
         [TestMethod]
         public void SpellChecker_SourceDictionaryFilePath_DefaultLanguage_IsEnglish()
