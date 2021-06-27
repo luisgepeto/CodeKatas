@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using System.IO;
+﻿using System.IO;
 using System.Threading.Tasks;
 
 namespace SpellChecker
@@ -41,8 +40,7 @@ namespace SpellChecker
         }
         protected string GetSourceDictionaryFilePath()
         {
-            var descriptionAttribute = (DescriptionAttribute)typeof(Language).GetField(Language.ToString()).GetCustomAttributes(typeof(DescriptionAttribute), false)[0];
-            return $"./SourceDictionaries/wordlist.{descriptionAttribute.Description}.txt";
+            return $"./SourceDictionaries/wordlist.{Language.GetDescription()}.txt";
         }
         protected abstract void LoadWord(string word);
     }
