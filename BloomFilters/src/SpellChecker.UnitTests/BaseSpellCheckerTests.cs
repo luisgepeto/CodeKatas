@@ -73,6 +73,12 @@ namespace SpellChecker.UnitTests
         public string SourceDictionaryFilePath => GetSourceDictionaryFilePath();
         public Task LoadSourceDictionaryTask => LoadSourceDictionaryAsync();
         public List<string> WordList { get; }
+
+        public override bool CheckWord(string word)
+        {
+            throw new System.NotImplementedException();
+        }
+
         protected override void LoadWord(string word)
         {
             WordList.Add(word);

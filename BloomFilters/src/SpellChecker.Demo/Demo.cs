@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 using CommandLine;
@@ -28,8 +29,18 @@ namespace SpellChecker.Demo
 
         public static async Task CheckSpelling(DemoOptions demoOptions)
         {
-            var options = new BloomFilterSpellCheckerOptions(demoOptions.ParsedLanguage);
-            ISpellChecker filter = await BloomFilterSpellChecker.InitializeAsync(options);
+            var bloomFilterOptions = new BloomFilterSpellCheckerOptions(demoOptions.ParsedLanguage);
+            ISpellChecker filter = await BloomFilterSpellChecker.InitializeAsync(bloomFilterOptions);
+            var result = filter.Check(demoOptions.Text);
+            if (!result.ErrorsByStartIndex.Any())
+                Console.WriteLine("Your text was error free! Congratulations!");
+            else
+            {
+                foreach (var error in result.ErrorsByStartIndex)
+                {
+                    Console.WriteLine("The following word was not found in the dictionary: " + result.OriginalText.Substring(error.Key, error.Value.Length));
+                }
+            }
         }
     }
 }

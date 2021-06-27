@@ -9,7 +9,7 @@ using SpellChecker.Interfaces;
 namespace SpellChecker
 {
     // Based on https://en.wikipedia.org/wiki/Bloom_filter
-    public class BloomFilterSpellChecker : BaseSpellChecker, ISpellChecker
+    public class BloomFilterSpellChecker : BaseSpellChecker
     {
         public bool[] BitArray { get; }
         private int _hashingFunctionsCount { get; }
@@ -31,26 +31,7 @@ namespace SpellChecker
             _verifyFalsePositives = options.VerifyFalsePositives;
         }
 
-        public SpellCheckResult Check(string text)
-        {
-            //TODO Verify all kinds of line breaks
-            var aggregateIndex = 0;
-            var notFoundWords = text.Split(" ").Select(w =>
-            {
-                var startIndex = aggregateIndex;
-                var length = w.Length;
-                aggregateIndex += length + 1;
-                var canCheck = !string.IsNullOrWhiteSpace(w.Replace("\r\n", ""));
-                var sanitizedWord = w.ToLowerInvariant();
-                var isFound = true;
-                if (canCheck)
-                    isFound = CheckWord(sanitizedWord);
-                return (StartIndex: startIndex, Length: length, SanitizedWord: sanitizedWord, IsFound: isFound);
-            }).Where(w => !w.IsFound).ToDictionary(r => r.StartIndex, r => (r.SanitizedWord, r.Length));
-            return new SpellCheckResult(text, notFoundWords);
-        }
-
-        public bool CheckWord(string word)
+        public override bool CheckWord(string word)
         {
             var bitsToHash = GetWordHash(word);
             var isFound = true;
