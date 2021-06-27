@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 using SpellChecker.Interfaces;
 
@@ -6,7 +7,14 @@ namespace SpellChecker
 {
     public class BloomFilterSpellChecker : BaseSpellChecker, ISpellChecker
     {
-        public BloomFilterSpellChecker(BloomFilterSpellCheckerOptions options) : base(options)
+        public static async Task<ISpellChecker> InitializeAsync(BloomFilterSpellCheckerOptions options)
+        {
+            var filter = new BloomFilterSpellChecker(options);
+            await filter.LoadSourceDictionaryAsync();
+            return filter;
+        }
+
+        private BloomFilterSpellChecker(BloomFilterSpellCheckerOptions options) : base(options)
         {
 
         }

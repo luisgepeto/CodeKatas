@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 using CommandLine;
 
@@ -9,29 +10,26 @@ namespace SpellChecker.Demo
 {
     public class Demo
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
-
-            Parser.Default.ParseArguments<DemoOptions>(args)
-                .WithParsed(o =>
+            await Parser.Default.ParseArguments<DemoOptions>(args)
+                .WithParsedAsync(o =>
                 {
                     if (!o.IsValid(out List<string> errorMessages))
                     {
                         foreach (var error in errorMessages)
                             Console.WriteLine(error);
-                        return;
+                        return Task.CompletedTask;
                     }
                     else
-                    {
-                        CheckSpelling(o);
-                    }
+                        return CheckSpelling(o);
                 });
         }
 
-        public static void CheckSpelling(DemoOptions demoOptions)
+        public static async Task CheckSpelling(DemoOptions demoOptions)
         {
             var options = new BloomFilterSpellCheckerOptions(demoOptions.ParsedLanguage);
-            ISpellChecker spellChecker = new BloomFilterSpellChecker(options);
+            ISpellChecker filter = await BloomFilterSpellChecker.InitializeAsync(options);
         }
     }
 }

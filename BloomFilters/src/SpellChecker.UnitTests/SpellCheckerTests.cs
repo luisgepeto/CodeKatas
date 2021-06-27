@@ -71,7 +71,7 @@ namespace SpellChecker.UnitTests
     {
         public TestSpellChecker(SpellCheckerOptions options) : base(options) { WordList = new List<string>(); }
         public string SourceDictionaryFilePath => GetSourceDictionaryFilePath();
-        public Task LoadSourceDictionaryTask => LoadSourceDictionary();
+        public Task LoadSourceDictionaryTask => LoadSourceDictionaryAsync();
         public List<string> WordList { get; }
         protected override void LoadWord(string word)
         {

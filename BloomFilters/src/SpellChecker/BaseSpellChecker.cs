@@ -14,7 +14,7 @@ namespace SpellChecker
         {
             return $"./SourceDictionaries/wordlist.{_options.Language.GetDescription()}.txt";
         }
-        protected virtual async Task LoadSourceDictionary()
+        protected virtual async Task LoadSourceDictionaryAsync()
         {
             var filePath = GetSourceDictionaryFilePath();
             using var file = new StreamReader(filePath);
