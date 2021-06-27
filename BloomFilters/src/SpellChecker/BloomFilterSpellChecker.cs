@@ -13,6 +13,7 @@ namespace SpellChecker
     {
         public bool[] BitArray { get; }
         private int _hashingFunctionsCount { get; }
+        //TODO Implement Verification for false positives where dictionary is accessed
         private bool _verifyFalsePositives { get; }
         public static async Task<ISpellChecker> InitializeAsync(BloomFilterSpellCheckerOptions options)
         {
@@ -30,9 +31,23 @@ namespace SpellChecker
             _verifyFalsePositives = options.VerifyFalsePositives;
         }
 
-        public Dictionary<string, bool> CheckByWords(string text)
+        public SpellCheckResult Check(string text)
         {
-            throw new System.NotImplementedException();
+            //TODO Verify all kinds of line breaks
+            var aggregateIndex = 0;
+            var notFoundWords = text.Split(" ").Select(w =>
+            {
+                var startIndex = aggregateIndex;
+                var length = w.Length;
+                aggregateIndex += length + 1;
+                var canCheck = !string.IsNullOrWhiteSpace(w.Replace("\r\n", ""));
+                var sanitizedWord = w.ToLowerInvariant();
+                var isFound = true;
+                if (canCheck)
+                    isFound = CheckWord(sanitizedWord);
+                return (StartIndex: startIndex, Length: length, SanitizedWord: sanitizedWord, IsFound: isFound);
+            }).Where(w => !w.IsFound).ToDictionary(r => r.StartIndex, r => (r.SanitizedWord, r.Length));
+            return new SpellCheckResult(text, notFoundWords);
         }
 
         public bool CheckWord(string word)

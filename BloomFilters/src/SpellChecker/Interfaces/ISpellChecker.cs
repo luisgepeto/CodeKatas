@@ -1,9 +1,7 @@
-﻿using System.Collections.Generic;
-
-namespace SpellChecker.Interfaces
+﻿namespace SpellChecker.Interfaces
 {
     public interface ISpellChecker
     {
-        Dictionary<string, bool> CheckByWords(string text);
+        SpellCheckResult Check(string text);
     }
 }

@@ -12,14 +12,38 @@ namespace SpellChecker.UnitTests
     {
 
         [TestMethod]
+        public async Task BloomFilterSpellChecker_Check_NonExistingWords_ReturnsExpected()
+        {
+            // Arrange
+            var options = new BloomFilterSpellCheckerOptions(Language.English, 16);
+            var filter = await BloomFilterSpellChecker.InitializeAsync(options);
+            var stringToCheck = "this Is not a    testworD1   \r\n inclUded ";
+            // Act
+            var result = filter.Check(stringToCheck);
+            // Assert
+            Assert.AreEqual(stringToCheck, result.OriginalText);
+            Assert.AreEqual(5, result.ErrorsByStartIndex.Count());
+            Assert.AreEqual("this", result.ErrorsByStartIndex[0].SanitizedWord);
+            Assert.AreEqual("this", stringToCheck.Substring(0, result.ErrorsByStartIndex[0].Length).ToLowerInvariant());
+            Assert.AreEqual("is", result.ErrorsByStartIndex[5].SanitizedWord);
+            Assert.AreEqual("is", stringToCheck.Substring(5, result.ErrorsByStartIndex[5].Length).ToLowerInvariant());
+            Assert.AreEqual("not", result.ErrorsByStartIndex[8].SanitizedWord);
+            Assert.AreEqual("not", stringToCheck.Substring(8, result.ErrorsByStartIndex[8].Length).ToLowerInvariant());
+            Assert.AreEqual("a", result.ErrorsByStartIndex[12].SanitizedWord);
+            Assert.AreEqual("a", stringToCheck.Substring(12, result.ErrorsByStartIndex[12].Length).ToLowerInvariant());
+            Assert.AreEqual("included", result.ErrorsByStartIndex[32].SanitizedWord);
+            Assert.AreEqual("included", stringToCheck.Substring(32, result.ErrorsByStartIndex[32].Length).ToLowerInvariant());
+        }
+
+        [TestMethod]
         public async Task BloomFilterSpellChecker_CheckWord_Exists_ReturnsTrue()
         {
             // Arrange
             var options = new BloomFilterSpellCheckerOptions(Language.English, 16);
-            // Act
             var filter = (BloomFilterSpellChecker)await BloomFilterSpellChecker.InitializeAsync(options);
-            // Assert
+            // Act
             var result = filter.CheckWord("testword1");
+            // Assert
             Assert.IsTrue(result);
         }
 
@@ -28,10 +52,10 @@ namespace SpellChecker.UnitTests
         {
             // Arrange
             var options = new BloomFilterSpellCheckerOptions(Language.English, 16);
-            // Act
             var filter = (BloomFilterSpellChecker)await BloomFilterSpellChecker.InitializeAsync(options);
-            // Assert
+            // Act
             var result = filter.CheckWord("testword999");
+            // Assert
             Assert.IsFalse(result);
         }
 
