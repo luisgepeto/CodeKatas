@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -9,6 +10,23 @@ namespace SpellChecker.UnitTests
     [TestClass]
     public class BloomFilterSpellCheckerTests
     {
+        [TestMethod]
+        public async Task BloomFilterSpellChecker_FalsePositives_Statistics()
+        {
+            // Arrange
+            var options = new BloomFilterSpellCheckerOptions(Language.English, bitArrayLength: 1000);
+            var filter = await BloomFilterSpellChecker.InitializeAsync(options);
+            var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            var random = new Random();
+            // Act
+            foreach (var i in Enumerable.Range(0, 1000000))
+            {
+                var randomString = new string(Enumerable.Range(0, 5).Select(s => chars[random.Next(chars.Length)]).ToArray());
+                var result = filter.Check(randomString);
+                if (!result.ErrorsByStartIndex.Any())
+                    Debug.WriteLine("Random string found: " + randomString);
+            }
+        }
 
         [TestMethod]
         public async Task BloomFilterSpellChecker_Check_NonExistingWords_ReturnsExpected()
