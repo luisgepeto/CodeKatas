@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -63,13 +62,13 @@ namespace SpellChecker.UnitTests
         public async Task BloomFilterSpellChecker_InitializeAsync_DictionaryIsLoaded()
         {
             // Arrange
-            var options = new BloomFilterSpellCheckerOptions(Language.English, 16);
-            var expectedSetElements = new List<int>() { 3, 6, 8, 9, 17, 18, 23, 25, 34, 47, 59, 62, 70, 73, 80, 82, 86, 89, 93, 99, 100, 102, 105, 109, 118, 144, 146, 150, 155, 169, 170, 171, 182, 188, 193, 198, 209, 213, 222, 228, 234, 237, 243, 250, 251, 253 };
+            var options = new BloomFilterSpellCheckerOptions(Language.English, 16, bitArrayLength: 50);
+            var resultArray = new bool[50];
             // Act
             var filter = (BloomFilterSpellChecker)await BloomFilterSpellChecker.InitializeAsync(options);
-            // Assert
-            var setElements = filter.BitArray.Select((ba, i) => (BitValue: ba, Index: i)).Where(ba => ba.BitValue).Select(ba => ba.Index);
-            Assert.IsTrue(Enumerable.SequenceEqual(expectedSetElements, setElements));
+            filter.BitArray.CopyTo(resultArray, 0);
+            // Assert            
+            Assert.IsTrue(resultArray.Any(r => r));
         }
 
 
@@ -118,16 +117,28 @@ namespace SpellChecker.UnitTests
         [TestMethod]
         [DataRow(5)]
         [DataRow(16)]
-        public async Task BloomFilterSpellChecker_GetWordHash_MatchesHashingFunctionsCount(int hashingFunctions)
+        public async Task BloomFilterSpellChecker_GetWordHash_LimitToMaxBitArray(int hashingFunctions)
         {
             // Arrange
-            var options = new BloomFilterSpellCheckerOptions(Language.English, hashingFunctions);
+            int maxBitArrayLength = 50;
+            var options = new BloomFilterSpellCheckerOptions(Language.English, hashingFunctions, bitArrayLength: maxBitArrayLength);
             var filter = (BloomFilterSpellChecker)await BloomFilterSpellChecker.InitializeAsync(options);
-            var fullHash = new byte[] { 93, 65, 64, 42, 188, 75, 42, 118, 185, 113, 157, 145, 16, 23, 197, 146 };
             // Act
             var result = filter.GetWordHash("hello");
             // Assert
-            Assert.IsTrue(Enumerable.SequenceEqual(fullHash.Take(hashingFunctions), result));
+            Assert.IsTrue(result.All(r => r < maxBitArrayLength));
+        }
+
+        [TestMethod]
+        public async Task BloomFilterSpellChecker_GetWordHash_UsesRandom()
+        {
+            // Arrange
+            var options = new BloomFilterSpellCheckerOptions(Language.English, bitArrayLength: 10);
+            var filter = (BloomFilterSpellChecker)await BloomFilterSpellChecker.InitializeAsync(options);
+            // Act
+            var result = filter.GetWordHash("hello");
+            // Assert
+            Assert.IsTrue(result.All(r => r < 10));
         }
     }
 }

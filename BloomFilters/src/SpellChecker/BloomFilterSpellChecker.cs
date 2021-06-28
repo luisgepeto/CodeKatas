@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -11,8 +13,9 @@ namespace SpellChecker
     // Based on https://en.wikipedia.org/wiki/Bloom_filter
     public class BloomFilterSpellChecker : BaseSpellChecker
     {
-        public bool[] BitArray { get; }
+        public BitArray BitArray { get; }
         private int _hashingFunctionsCount { get; }
+        private int _bitArrayLength { get; }
         //TODO Implement Verification for false positives where dictionary is accessed
         private bool _verifyFalsePositives { get; }
         public static async Task<ISpellChecker> InitializeAsync(BloomFilterSpellCheckerOptions options)
@@ -26,7 +29,8 @@ namespace SpellChecker
         {
             //TODO Investigate this size. 
             // Since the max number an MD5 hash can generate is 255, does it make sense to have more bits?
-            BitArray = new bool[256];
+            _bitArrayLength = options.BitArrayLength;
+            BitArray = new BitArray(_bitArrayLength);
             _hashingFunctionsCount = options.HashingFunctionsCount;
             _verifyFalsePositives = options.VerifyFalsePositives;
         }
@@ -55,12 +59,15 @@ namespace SpellChecker
             });
         }
 
-        public List<byte> GetWordHash(string word)
+        public List<int> GetWordHash(string word)
         {
             using MD5 md5 = MD5.Create();
             var inputBytes = Encoding.ASCII.GetBytes(word);
-            var hashBytes = md5.ComputeHash(inputBytes);
-            return hashBytes.Take(_hashingFunctionsCount).ToList();
+            var md5Hash = md5.ComputeHash(inputBytes);
+            //IMPORTANT GetHashCode is not consistent across executions
+            var secondHash = new Random(word.GetHashCode()).Next(0, _bitArrayLength);
+            //TODO Validate since secondHash * h can generate a runtime exception
+            return md5Hash.Take(_hashingFunctionsCount).Select(h => (secondHash * h) % _bitArrayLength).ToList();
         }
     }
 }
