@@ -51,8 +51,8 @@ namespace SpellChecker.Demo
         {
             //TODO All parameters could be sent on the DemoOptions object
             var numberOfWords = 100;
-            var hashingFunctionsOptions = Enumerable.Range(1, 2).Reverse();
-            var bitArrayLengthOptions = new List<int>() { 10000000/*, 1000000, 100000, 10000, 1000, 100, 10 */};
+            var hashingFunctionsOptions = Enumerable.Range(5, 15);
+            var bitArrayLengthOptions = new List<int>() { 50000000, 5000000, 500000 };
             var testText = GenerateTestText(numberOfWords);
 
             var summary = new List<(int HashingFunctions, int BitArrayLength, int ErrorCount, long InitializationMilliseconds)>();

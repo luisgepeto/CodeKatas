@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -74,17 +73,30 @@ namespace SpellChecker
 
         public List<int> GetWordHash(string word)
         {
-            var firstHash = Math.Abs(word.GetHashCode() % _bitArrayLength);
-            var hashList = new List<int>() { firstHash };
+            //Double hashing function as in https://www.khoury.northeastern.edu/~pete/pub/bloom-filters-verification.pdf
+            var firstIndex = ComputeIndex(word);
+            var hashList = new List<int>() { firstIndex };
             if (_hashingFunctionsCount > 1)
             {
-                using MD5 md5 = MD5.Create();
-                var inputBytes = Encoding.ASCII.GetBytes(word);
-                var md5Hash = md5.ComputeHash(inputBytes);
-                var nextHashes = md5Hash.Take(_hashingFunctionsCount - 1).Select((h, i) => (firstHash + new Random((i + 1) * h).Next(0, _bitArrayLength)) % _bitArrayLength);
-                hashList.AddRange(nextHashes);
+                var secondIndex = ComputeIndex($"Double hash implementation for {word} of length {word.Length}");
+                var previousIndex = firstIndex;
+                for (var i = 1; i < _hashingFunctionsCount; i++)
+                {
+                    var currentIndex = (previousIndex + secondIndex) % _bitArrayLength;
+                    hashList.Add(currentIndex);
+                    previousIndex = currentIndex;
+                }
             }
             return hashList;
+        }
+
+        private int ComputeIndex(string inputString)
+        {
+            using var sha256 = SHA256.Create();
+            var inputBytes = Encoding.ASCII.GetBytes(inputString);
+            var regularHash = sha256.ComputeHash(inputBytes);
+            var index = Math.Abs(BitConverter.ToInt32(regularHash, 0)) % _bitArrayLength;
+            return index;
         }
     }
 }
