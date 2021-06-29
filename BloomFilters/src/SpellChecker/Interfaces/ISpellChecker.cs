@@ -1,8 +1,10 @@
-﻿namespace SpellChecker.Interfaces
+﻿using System.Threading.Tasks;
+
+namespace SpellChecker.Interfaces
 {
     public interface ISpellChecker
     {
         int WordCount { get; }
-        SpellCheckResult Check(string text);
+        Task<SpellCheckResult> CheckAsync(string text);
     }
 }

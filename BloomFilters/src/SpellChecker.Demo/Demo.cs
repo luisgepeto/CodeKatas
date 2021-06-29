@@ -37,7 +37,7 @@ namespace SpellChecker.Demo
             ISpellChecker filter = await BloomFilterSpellChecker.InitializeAsync(bloomFilterOptions);
             watch.Stop();
             Console.WriteLine($"Finished initializing bloom filter with {filter.WordCount} words after {watch.ElapsedMilliseconds}ms...");
-            var result = filter.Check(demoOptions.Text);
+            var result = await filter.CheckAsync(demoOptions.Text);
             if (!result.ErrorsByStartIndex.Any())
                 Console.WriteLine("Your text was error free! Congratulations!");
             else

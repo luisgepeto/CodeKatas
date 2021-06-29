@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -21,29 +22,22 @@ namespace SpellChecker
         }
         protected virtual async Task LoadSourceDictionaryAsync()
         {
-            var filePath = GetSourceDictionaryFilePath();
-            using var file = new StreamReader(filePath);
-            string nextLine;
-            do
+            await ReadSanitizedFileAsync((line) =>
             {
-                nextLine = await file.ReadLineAsync();
-                if (!string.IsNullOrWhiteSpace(nextLine))
-                {
-                    //TODO Should we care about multiple words in the same line?
-                    //TODO Should we care about lower case and upper case differences, as well as culture differences?
-                    LoadWord(nextLine.Trim().ToLowerInvariant());
-                    WordCount++;
-                }
-            }
-            while (nextLine != null);
+                //TODO Should we care about multiple words in the same line?
+                //TODO Should we care about lower case and upper case differences, as well as culture differences?
+                LoadWord(line);
+                WordCount++;
+                return true;
+            });
         }
         protected abstract void LoadWord(string word);
 
-        public SpellCheckResult Check(string text)
+        public async Task<SpellCheckResult> CheckAsync(string text)
         {
             //TODO Verify all kinds of line breaks and symbols?
             var aggregateIndex = 0;
-            var notFoundWords = text.Split(" ").Select(w =>
+            var isWordFoundTasks = text.Split(" ").Select(async w =>
             {
                 var startIndex = aggregateIndex;
                 var length = w.Length;
@@ -52,12 +46,32 @@ namespace SpellChecker
                 var sanitizedWord = w.ToLowerInvariant();
                 var isFound = true;
                 if (canCheck)
-                    isFound = CheckWord(sanitizedWord);
+                    isFound = await CheckWordAsync(sanitizedWord);
                 return (StartIndex: startIndex, Length: length, SanitizedWord: sanitizedWord, IsFound: isFound);
-            }).Where(w => !w.IsFound).ToDictionary(r => r.StartIndex, r => (r.SanitizedWord, r.Length));
+            }).ToArray();
+            var areWordsFound = await Task.WhenAll(isWordFoundTasks);
+            var notFoundWords = areWordsFound.Where(w => !w.IsFound).ToDictionary(r => r.StartIndex, r => (r.SanitizedWord, r.Length));
             return new SpellCheckResult(text, notFoundWords);
         }
 
-        public abstract bool CheckWord(string word);
+        public abstract Task<bool> CheckWordAsync(string word);
+
+
+        protected async Task ReadSanitizedFileAsync(Func<string, bool> callback)
+        {
+            var filePath = GetSourceDictionaryFilePath();
+            using var file = new StreamReader(filePath);
+            string nextLine;
+            do
+            {
+                nextLine = await file.ReadLineAsync();
+                if (!string.IsNullOrWhiteSpace(nextLine))
+                {
+                    if (!callback(nextLine.Trim().ToLowerInvariant()))
+                        break;
+                }
+            }
+            while (nextLine != null);
+        }
     }
 }

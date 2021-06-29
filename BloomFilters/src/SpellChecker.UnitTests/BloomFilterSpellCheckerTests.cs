@@ -29,14 +29,40 @@ namespace SpellChecker.UnitTests
         }
 
         [TestMethod]
-        public async Task BloomFilterSpellChecker_Check_NonExistingWords_ReturnsExpected()
+        public async Task BloomFilterSpellChecker_IsVerifySet_FalsePositive_ReturnsFalse()
+        {
+            // Arrange
+            var options = new BloomFilterSpellCheckerOptions(Language.English, bitArrayLength: 5, verifyFalsePositives: true);
+            var filter = (BloomFilterSpellChecker)await BloomFilterSpellChecker.InitializeAsync(options);
+            var stringToCheck = "hi";
+            // Act
+            var result = await filter.CheckWordAsync(stringToCheck);
+            // Assert
+            Assert.IsFalse(result);
+        }
+
+        [TestMethod]
+        public async Task BloomFilterSpellChecker_IsVerifyNotSet_FalsePositive_ReturnsTrue()
+        {
+            // Arrange
+            var options = new BloomFilterSpellCheckerOptions(Language.English, bitArrayLength: 5, verifyFalsePositives: false);
+            var filter = (BloomFilterSpellChecker)await BloomFilterSpellChecker.InitializeAsync(options);
+            var stringToCheck = "hi";
+            // Act
+            var result = await filter.CheckWordAsync(stringToCheck);
+            // Assert
+            Assert.IsTrue(result);
+        }
+
+        [TestMethod]
+        public async Task BloomFilterSpellChecker_CheckAsync_NonExistingWords_ReturnsExpected()
         {
             // Arrange
             var options = new BloomFilterSpellCheckerOptions(Language.English, 16);
             var filter = await BloomFilterSpellChecker.InitializeAsync(options);
             var stringToCheck = "this Is not a    testworD1   \r\n inclUded ";
             // Act
-            var result = filter.Check(stringToCheck);
+            var result = await filter.CheckAsync(stringToCheck);
             // Assert
             Assert.AreEqual(stringToCheck, result.OriginalText);
             Assert.AreEqual(5, result.ErrorsByStartIndex.Count());
@@ -59,7 +85,7 @@ namespace SpellChecker.UnitTests
             var options = new BloomFilterSpellCheckerOptions(Language.English, 16);
             var filter = (BloomFilterSpellChecker)await BloomFilterSpellChecker.InitializeAsync(options);
             // Act
-            var result = filter.CheckWord("testword1");
+            var result = await filter.CheckWordAsync("testword1");
             // Assert
             Assert.IsTrue(result);
         }
@@ -71,7 +97,7 @@ namespace SpellChecker.UnitTests
             var options = new BloomFilterSpellCheckerOptions(Language.English, 16);
             var filter = (BloomFilterSpellChecker)await BloomFilterSpellChecker.InitializeAsync(options);
             // Act
-            var result = filter.CheckWord("testword999");
+            var result = await filter.CheckWordAsync("testword999");
             // Assert
             Assert.IsFalse(result);
         }

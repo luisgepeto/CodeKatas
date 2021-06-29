@@ -86,7 +86,7 @@ namespace SpellChecker.UnitTests
         public Task LoadSourceDictionaryTask => LoadSourceDictionaryAsync();
         public List<string> WordList { get; }
 
-        public override bool CheckWord(string word)
+        public override Task<bool> CheckWordAsync(string word)
         {
             throw new System.NotImplementedException();
         }

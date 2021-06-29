@@ -16,7 +16,6 @@ namespace SpellChecker
         public BitArray BitArray { get; }
         private int _hashingFunctionsCount { get; }
         private int _bitArrayLength { get; }
-        //TODO Implement Verification for false positives where dictionary is accessed
         private bool _verifyFalsePositives { get; }
         public static async Task<ISpellChecker> InitializeAsync(BloomFilterSpellCheckerOptions options)
         {
@@ -25,17 +24,15 @@ namespace SpellChecker
             return filter;
         }
 
-        private BloomFilterSpellChecker(BloomFilterSpellCheckerOptions options) : base(options)
+        protected BloomFilterSpellChecker(BloomFilterSpellCheckerOptions options) : base(options)
         {
-            //TODO Investigate this size. 
-            // Since the max number an MD5 hash can generate is 255, does it make sense to have more bits?
             _bitArrayLength = options.BitArrayLength;
             BitArray = new BitArray(_bitArrayLength);
             _hashingFunctionsCount = options.HashingFunctionsCount;
             _verifyFalsePositives = options.VerifyFalsePositives;
         }
 
-        public override bool CheckWord(string word)
+        public override async Task<bool> CheckWordAsync(string word)
         {
             var bitsToHash = GetWordHash(word);
             var isFound = true;
@@ -46,6 +43,21 @@ namespace SpellChecker
                     isFound = false;
                     break;
                 }
+            }
+            if (isFound && _verifyFalsePositives)
+            {
+                // We could have a list property that gets filled inside the LoadWord function, however the purpose of this Kata is to minimize memory, so we will open the file and search for the word.
+                var isFoundInFile = false;
+                await ReadSanitizedFileAsync((line) =>
+                {
+                    if (line == word)
+                    {
+                        isFoundInFile = true;
+                        return false;
+                    }
+                    return true;
+                });
+                isFound = isFoundInFile;
             }
             return isFound;
         }
