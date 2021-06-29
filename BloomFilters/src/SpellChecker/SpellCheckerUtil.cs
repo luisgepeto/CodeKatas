@@ -6,7 +6,7 @@ namespace SpellChecker
 {
     public static class SpellCheckerUtil
     {
-        //TODO These methods will throw an exception if the enum does not have a description attribute
+        //TODO These method will throw an exception if the enum does not have a description attribute
         public static string GetDescription<T>(this T enumValue) where T : Enum
         {
             var descriptionAttribute = (DescriptionAttribute)enumValue.GetType().GetField(enumValue.ToString()).GetCustomAttributes(typeof(DescriptionAttribute), false)[0];
