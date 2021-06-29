@@ -12,6 +12,8 @@ namespace SpellChecker.Demo
         public string Language { get; set; }
         [Option('t', "text", HelpText = "A string to be spell checked.")]
         public string Text { get; set; }
+        [Option('d', "diagnostics", HelpText = "Run performance diagnostics")]
+        public bool RunDiagnostics { get; set; }
         //TODO We could add options to read from file        
         public Language ParsedLanguage
         {
@@ -25,7 +27,7 @@ namespace SpellChecker.Demo
         public bool IsValid(out List<string> errorMessages)
         {
             errorMessages = new List<string>();
-            if (string.IsNullOrEmpty(Text))
+            if (!RunDiagnostics && string.IsNullOrEmpty(Text))
                 errorMessages.Add("A non empty text to spell check needs to be provided.");
             if (!TryParseLanguage(Language, out _))
                 errorMessages.Add("A valid language ('es', 'en') needs to be provided.");

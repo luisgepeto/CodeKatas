@@ -73,10 +73,17 @@ namespace SpellChecker
 
         public List<int> GetWordHash(string word)
         {
-            using MD5 md5 = MD5.Create();
-            var inputBytes = Encoding.ASCII.GetBytes(word);
-            var md5Hash = md5.ComputeHash(inputBytes);
-            return md5Hash.Take(_hashingFunctionsCount).Select((h, i) => new Random(h * i).Next(0, _bitArrayLength)).ToList();
+            var firstHash = Math.Abs(word.GetHashCode() % _bitArrayLength);
+            var hashList = new List<int>() { firstHash };
+            if (_hashingFunctionsCount > 1)
+            {
+                using MD5 md5 = MD5.Create();
+                var inputBytes = Encoding.ASCII.GetBytes(word);
+                var md5Hash = md5.ComputeHash(inputBytes);
+                var nextHashes = md5Hash.Take(_hashingFunctionsCount - 1).Select((h, i) => (firstHash + new Random((i + 1) * h).Next(0, _bitArrayLength)) % _bitArrayLength);
+                hashList.AddRange(nextHashes);
+            }
+            return hashList;
         }
     }
 }

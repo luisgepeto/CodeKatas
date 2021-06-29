@@ -11,24 +11,6 @@ namespace SpellChecker.UnitTests
     public class BloomFilterSpellCheckerTests
     {
         [TestMethod]
-        public async Task BloomFilterSpellChecker_FalsePositives_Statistics()
-        {
-            //// Arrange
-            //var options = new BloomFilterSpellCheckerOptions(Language.English, bitArrayLength: 1000);
-            //var filter = await BloomFilterSpellChecker.InitializeAsync(options);
-            //var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-            //var random = new Random();
-            //// Act
-            //foreach (var i in Enumerable.Range(0, 1000000))
-            //{
-            //    var randomString = new string(Enumerable.Range(0, 5).Select(s => chars[random.Next(chars.Length)]).ToArray());
-            //    var result = filter.Check(randomString);
-            //    if (!result.ErrorsByStartIndex.Any())
-            //        Debug.WriteLine("Random string found: " + randomString);
-            //}
-        }
-
-        [TestMethod]
         public async Task BloomFilterSpellChecker_IsVerifySet_FalsePositive_ReturnsFalse()
         {
             // Arrange
@@ -58,7 +40,7 @@ namespace SpellChecker.UnitTests
         public async Task BloomFilterSpellChecker_CheckAsync_NonExistingWords_ReturnsExpected()
         {
             // Arrange
-            var options = new BloomFilterSpellCheckerOptions(Language.English, 16);
+            var options = new BloomFilterSpellCheckerOptions(Language.English, 17);
             var filter = await BloomFilterSpellChecker.InitializeAsync(options);
             var stringToCheck = "this Is not a    testworD1   \r\n inclUded ";
             // Act
@@ -82,7 +64,7 @@ namespace SpellChecker.UnitTests
         public async Task BloomFilterSpellChecker_CheckWord_Exists_ReturnsTrue()
         {
             // Arrange
-            var options = new BloomFilterSpellCheckerOptions(Language.English, 16);
+            var options = new BloomFilterSpellCheckerOptions(Language.English, 17);
             var filter = (BloomFilterSpellChecker)await BloomFilterSpellChecker.InitializeAsync(options);
             // Act
             var result = await filter.CheckWordAsync("testword1");
@@ -94,7 +76,7 @@ namespace SpellChecker.UnitTests
         public async Task BloomFilterSpellChecker_CheckWord_DoesntExists_ReturnsFalse()
         {
             // Arrange
-            var options = new BloomFilterSpellCheckerOptions(Language.English, 16);
+            var options = new BloomFilterSpellCheckerOptions(Language.English, 17);
             var filter = (BloomFilterSpellChecker)await BloomFilterSpellChecker.InitializeAsync(options);
             // Act
             var result = await filter.CheckWordAsync("testword999");
@@ -106,7 +88,7 @@ namespace SpellChecker.UnitTests
         public async Task BloomFilterSpellChecker_InitializeAsync_DictionaryIsLoaded()
         {
             // Arrange
-            var options = new BloomFilterSpellCheckerOptions(Language.English, 16, bitArrayLength: 50);
+            var options = new BloomFilterSpellCheckerOptions(Language.English, 17, bitArrayLength: 50);
             var resultArray = new bool[50];
             // Act
             var filter = (BloomFilterSpellChecker)await BloomFilterSpellChecker.InitializeAsync(options);
@@ -130,7 +112,7 @@ namespace SpellChecker.UnitTests
         [TestMethod]
         [DataRow(0)]
         [DataRow(-1)]
-        [DataRow(17)]
+        [DataRow(18)]
         public void BloomFilterSpellChecker_NumberOfHashingFunctions_OutOfRange_ThrowsException(int hashingFunctionsCount)
         {
             // Act
@@ -142,14 +124,14 @@ namespace SpellChecker.UnitTests
             {
                 // Assert
                 Assert.IsTrue(ex is ApplicationException);
-                Assert.IsTrue(ex.Message.Contains("The hashing functions count must be between 1 and 16"));
+                Assert.IsTrue(ex.Message.Contains("The hashing functions count must be between 1 and 17"));
             }
         }
 
         [TestMethod]
         [DataRow(1)]
         [DataRow(5)]
-        [DataRow(16)]
+        [DataRow(17)]
         public void BloomFilterSpellChecker_NumberOfHashingFunctions_InRange_IsValid(int hashingFunctionsCount)
         {
             // Act
@@ -161,7 +143,7 @@ namespace SpellChecker.UnitTests
 
         [TestMethod]
         [DataRow(5)]
-        [DataRow(16)]
+        [DataRow(17)]
         public async Task BloomFilterSpellChecker_GetWordHash_LimitToMaxBitArray(int hashingFunctions)
         {
             // Arrange

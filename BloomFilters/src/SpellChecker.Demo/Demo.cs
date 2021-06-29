@@ -24,28 +24,66 @@ namespace SpellChecker.Demo
                         return Task.CompletedTask;
                     }
                     else
-                        return CheckSpelling(o);
+                    {
+                        if (!o.RunDiagnostics)
+                            return CheckSpelling(o);
+                        else
+                            return RunDiagnostics();
+                    }
                 });
         }
 
         public static async Task CheckSpelling(DemoOptions demoOptions)
         {
             var bloomFilterOptions = new BloomFilterSpellCheckerOptions(demoOptions.ParsedLanguage);
-            var watch = new Stopwatch();
-            watch.Start();
-            Console.WriteLine("Initializing bloom filter...");
             ISpellChecker filter = await BloomFilterSpellChecker.InitializeAsync(bloomFilterOptions);
-            watch.Stop();
-            Console.WriteLine($"Finished initializing bloom filter with {filter.WordCount} words after {watch.ElapsedMilliseconds}ms...");
             var result = await filter.CheckAsync(demoOptions.Text);
             if (!result.ErrorsByStartIndex.Any())
                 Console.WriteLine("Your text was error free! Congratulations!");
             else
             {
-                foreach (var error in result.ErrorsByStartIndex)
+                var notFound = string.Join(" ", result.ErrorsByStartIndex.Select(e => result.OriginalText.Substring(e.Key, e.Value.Length)));
+                Console.WriteLine($"The following words were not found in the dictionary: {notFound}");
+            }
+        }
+
+        public static async Task RunDiagnostics()
+        {
+            //TODO All these parameters could be sent on the DemoOptions object
+            var numberOfWords = 100;
+            var inexistentText = "";
+            var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            var random = new Random();
+            foreach (var i in Enumerable.Range(0, numberOfWords))
+            {
+                var randomString = new string(Enumerable.Range(0, 5).Select(s => chars[random.Next(chars.Length)]).ToArray());
+                // We can safely assume that this text does not contain any real words
+                inexistentText += randomString + " ";
+            }
+            var hashingFunctionsOptions = Enumerable.Range(1, 17).Reverse();
+            var bitArrayLengthOptions = new List<int>() { 10000000, 1000000, 100000, 10000, 1000, 100, 10 };
+            var summary = new List<(int HashingFunctions, int BitArrayLength, int FalsePositives, long InitializationMilliseconds)>();
+            foreach (var hashingFunctionsCount in hashingFunctionsOptions)
+            {
+                foreach (var bitArrayLength in bitArrayLengthOptions)
                 {
-                    Console.WriteLine("The following word was not found in the dictionary: " + result.OriginalText.Substring(error.Key, error.Value.Length));
+                    var options = new BloomFilterSpellCheckerOptions(Language.English, hashingFunctionsCount, false, bitArrayLength);
+                    var watch = new Stopwatch();
+                    watch.Start();
+                    var filter = await BloomFilterSpellChecker.InitializeAsync(options);
+                    watch.Stop();
+                    var result = await filter.CheckAsync(inexistentText);
+                    var errorCount = result.ErrorsByStartIndex.Keys.Count();
+                    var falsePositives = numberOfWords - errorCount;
+                    summary.Add((hashingFunctionsCount, bitArrayLength, falsePositives, watch.ElapsedMilliseconds));
+                    Console.WriteLine($"FalsePositiveRate: {falsePositives}% BitArrayLength: {bitArrayLength} InitializationMilliseconds: {watch.ElapsedMilliseconds} HashingFunctions: {hashingFunctionsCount}");
                 }
+            }
+            Console.WriteLine();
+            Console.WriteLine("========== ANALYSIS SUMMARY ========== ");
+            foreach (var summaryResult in summary.OrderBy(s => s.FalsePositives).ThenBy(s => s.BitArrayLength).ThenBy(s => s.InitializationMilliseconds).ThenBy(s => s.HashingFunctions))
+            {
+                Console.WriteLine($"FalsePositiveRate: {summaryResult.FalsePositives}% BitArrayLength: {summaryResult.BitArrayLength} InitializationMilliseconds: {summaryResult.InitializationMilliseconds} HashingFunctions: {summaryResult.HashingFunctions}");
             }
         }
     }

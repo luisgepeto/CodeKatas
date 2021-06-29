@@ -8,15 +8,15 @@ namespace SpellChecker
         public BloomFilterSpellCheckerOptions(Language language, int? hashingFunctionsCount = null, bool? verifyFalsePositives = null, int? bitArrayLength = null) : base(language)
         {
             //TODO Since MD5 generates 16 bytes, we might generate extra hashing functions by recursively hashing
-            if (hashingFunctionsCount <= 0 || hashingFunctionsCount > 16)
+            if (hashingFunctionsCount <= 0 || hashingFunctionsCount > 17)
                 throw new ApplicationException("The hashing functions count must be between 1 and 16");
-            if (!hashingFunctionsCount.HasValue) hashingFunctionsCount = 16;
+            // Optimal value determined by analysis summary
+            if (!hashingFunctionsCount.HasValue) hashingFunctionsCount = 1;
             HashingFunctionsCount = hashingFunctionsCount.Value;
             if (!verifyFalsePositives.HasValue) verifyFalsePositives = false;
             VerifyFalsePositives = verifyFalsePositives.Value;
-            // Optimal size determined by equation m = (k * n) / ln(2) 
-            // https://en.wikipedia.org/wiki/Bloom_filter#Probability_of_false_positives
-            if (!bitArrayLength.HasValue) bitArrayLength = 7822454;
+            // Optimal value determined by analysis summary
+            if (!bitArrayLength.HasValue) bitArrayLength = 10000000;
             BitArrayLength = bitArrayLength.Value;
         }
         public int HashingFunctionsCount { get; }
