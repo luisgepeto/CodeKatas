@@ -9,29 +9,17 @@ namespace SpellChecker
 {
     public abstract class BaseSpellChecker : ISpellChecker
     {
-        public int WordCount { get; private set; }
         protected SpellCheckerOptions _options;
+        public int WordCount { get; private set; }
 
         protected BaseSpellChecker(SpellCheckerOptions options)
         {
             _options = options;
         }
-        protected virtual string GetSourceDictionaryFilePath()
-        {
-            return $"./SourceDictionaries/wordlist.{_options.Language.GetDescription()}.txt";
-        }
-        protected virtual async Task LoadSourceDictionaryAsync()
-        {
-            await ReadSanitizedFileAsync((line) =>
-            {
-                //TODO Should we care about multiple words in the same line?
-                //TODO Should we care about lower case and upper case differences, as well as culture differences?
-                LoadWord(line);
-                WordCount++;
-                return true;
-            });
-        }
+
         protected abstract void LoadWord(string word);
+
+        public abstract Task<bool> CheckWordAsync(string word);
 
         public async Task<SpellCheckResult> CheckAsync(string text)
         {
@@ -54,8 +42,17 @@ namespace SpellChecker
             return new SpellCheckResult(text, notFoundWords);
         }
 
-        public abstract Task<bool> CheckWordAsync(string word);
-
+        protected virtual async Task LoadSourceDictionaryAsync()
+        {
+            await ReadSanitizedFileAsync((line) =>
+            {
+                //TODO Should we care about multiple words in the same line?
+                //TODO Should we care about lower case and upper case differences, as well as culture differences?
+                LoadWord(line);
+                WordCount++;
+                return true;
+            });
+        }
 
         protected async Task ReadSanitizedFileAsync(Func<string, bool> callback)
         {
@@ -72,6 +69,11 @@ namespace SpellChecker
                 }
             }
             while (nextLine != null);
+        }
+
+        protected virtual string GetSourceDictionaryFilePath()
+        {
+            return $"./SourceDictionaries/wordlist.{_options.Language.GetDescription()}.txt";
         }
     }
 }

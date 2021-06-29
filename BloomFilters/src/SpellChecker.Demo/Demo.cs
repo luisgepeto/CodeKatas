@@ -49,41 +49,56 @@ namespace SpellChecker.Demo
 
         public static async Task RunDiagnostics()
         {
-            //TODO All these parameters could be sent on the DemoOptions object
+            //TODO All parameters could be sent on the DemoOptions object
             var numberOfWords = 100;
-            var inexistentText = "";
+            var hashingFunctionsOptions = Enumerable.Range(1, 2).Reverse();
+            var bitArrayLengthOptions = new List<int>() { 10000000/*, 1000000, 100000, 10000, 1000, 100, 10 */};
+            var testText = GenerateTestText(numberOfWords);
+
+            var summary = new List<(int HashingFunctions, int BitArrayLength, int ErrorCount, long InitializationMilliseconds)>();
+            foreach (var hashingFunctionsCount in hashingFunctionsOptions)
+            {
+                foreach (var bitArrayLength in bitArrayLengthOptions)
+                {
+                    var summaryResult = await CheckAsync(testText, hashingFunctionsCount, bitArrayLength);
+                    summary.Add(summaryResult);
+                }
+            }
+            PrintAnalysis(numberOfWords, summary);
+        }
+
+        private static string GenerateTestText(int numberOfWords)
+        {
+            var testText = "";
             var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
             var random = new Random();
             foreach (var i in Enumerable.Range(0, numberOfWords))
             {
                 var randomString = new string(Enumerable.Range(0, 5).Select(s => chars[random.Next(chars.Length)]).ToArray());
                 // We can safely assume that this text does not contain any real words
-                inexistentText += randomString + " ";
+                testText += randomString + " ";
             }
-            var hashingFunctionsOptions = Enumerable.Range(1, 17).Reverse();
-            var bitArrayLengthOptions = new List<int>() { 10000000, 1000000, 100000, 10000, 1000, 100, 10 };
-            var summary = new List<(int HashingFunctions, int BitArrayLength, int FalsePositives, long InitializationMilliseconds)>();
-            foreach (var hashingFunctionsCount in hashingFunctionsOptions)
-            {
-                foreach (var bitArrayLength in bitArrayLengthOptions)
-                {
-                    var options = new BloomFilterSpellCheckerOptions(Language.English, hashingFunctionsCount, false, bitArrayLength);
-                    var watch = new Stopwatch();
-                    watch.Start();
-                    var filter = await BloomFilterSpellChecker.InitializeAsync(options);
-                    watch.Stop();
-                    var result = await filter.CheckAsync(inexistentText);
-                    var errorCount = result.ErrorsByStartIndex.Keys.Count();
-                    var falsePositives = numberOfWords - errorCount;
-                    summary.Add((hashingFunctionsCount, bitArrayLength, falsePositives, watch.ElapsedMilliseconds));
-                    Console.WriteLine($"FalsePositiveRate: {falsePositives}% BitArrayLength: {bitArrayLength} InitializationMilliseconds: {watch.ElapsedMilliseconds} HashingFunctions: {hashingFunctionsCount}");
-                }
-            }
-            Console.WriteLine();
+            return testText;
+        }
+
+        private static async Task<(int, int, int, long)> CheckAsync(string testText, int hashingFunctionsCount, int bitArrayLength)
+        {
+            var options = new BloomFilterSpellCheckerOptions(Language.English, hashingFunctionsCount, false, bitArrayLength);
+            var watch = new Stopwatch();
+            watch.Start();
+            var filter = await BloomFilterSpellChecker.InitializeAsync(options);
+            watch.Stop();
+            var result = await filter.CheckAsync(testText);
+            var errorCount = result.ErrorsByStartIndex.Keys.Count();
+            return (hashingFunctionsCount, bitArrayLength, errorCount, watch.ElapsedMilliseconds);
+        }
+
+        private static void PrintAnalysis(int numberOfWords, List<(int HashingFunctions, int BitArrayLength, int ErrorCount, long InitializationMilliseconds)> summary)
+        {
             Console.WriteLine("========== ANALYSIS SUMMARY ========== ");
-            foreach (var summaryResult in summary.OrderBy(s => s.FalsePositives).ThenBy(s => s.BitArrayLength).ThenBy(s => s.InitializationMilliseconds).ThenBy(s => s.HashingFunctions))
+            foreach (var summaryResult in summary.OrderBy(s => numberOfWords - s.ErrorCount).ThenBy(s => s.BitArrayLength).ThenBy(s => s.InitializationMilliseconds).ThenBy(s => s.HashingFunctions))
             {
-                Console.WriteLine($"FalsePositiveRate: {summaryResult.FalsePositives}% BitArrayLength: {summaryResult.BitArrayLength} InitializationMilliseconds: {summaryResult.InitializationMilliseconds} HashingFunctions: {summaryResult.HashingFunctions}");
+                Console.WriteLine($"FalsePositiveRate: {(numberOfWords - summaryResult.ErrorCount) * 100.0 / numberOfWords}% BitArrayLength: {summaryResult.BitArrayLength} InitializationMilliseconds: {summaryResult.InitializationMilliseconds} HashingFunctions: {summaryResult.HashingFunctions}");
             }
         }
     }

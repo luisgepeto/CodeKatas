@@ -13,10 +13,11 @@ namespace SpellChecker
     // Based on https://en.wikipedia.org/wiki/Bloom_filter
     public class BloomFilterSpellChecker : BaseSpellChecker
     {
-        public BitArray BitArray { get; }
         private int _hashingFunctionsCount { get; }
         private int _bitArrayLength { get; }
         private bool _verifyFalsePositives { get; }
+        public BitArray BitArray { get; }
+
         public static async Task<ISpellChecker> InitializeAsync(BloomFilterSpellCheckerOptions options)
         {
             var filter = new BloomFilterSpellChecker(options);
@@ -30,6 +31,15 @@ namespace SpellChecker
             BitArray = new BitArray(_bitArrayLength);
             _hashingFunctionsCount = options.HashingFunctionsCount;
             _verifyFalsePositives = options.VerifyFalsePositives;
+        }
+
+        protected override void LoadWord(string word)
+        {
+            var bitsToHash = GetWordHash(word);
+            bitsToHash.ForEach(b =>
+            {
+                BitArray[b] = true;
+            });
         }
 
         public override async Task<bool> CheckWordAsync(string word)
@@ -60,15 +70,6 @@ namespace SpellChecker
                 isFound = isFoundInFile;
             }
             return isFound;
-        }
-
-        protected override void LoadWord(string word)
-        {
-            var bitsToHash = GetWordHash(word);
-            bitsToHash.ForEach(b =>
-            {
-                BitArray[b] = true;
-            });
         }
 
         public List<int> GetWordHash(string word)

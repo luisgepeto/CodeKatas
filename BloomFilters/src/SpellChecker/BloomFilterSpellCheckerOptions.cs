@@ -4,6 +4,10 @@ namespace SpellChecker
 {
     public class BloomFilterSpellCheckerOptions : SpellCheckerOptions
     {
+        public int HashingFunctionsCount { get; }
+        public bool VerifyFalsePositives { get; }
+        public int BitArrayLength { get; }
+
         public BloomFilterSpellCheckerOptions() : this(Language.English, 16) { }
         public BloomFilterSpellCheckerOptions(Language language, int? hashingFunctionsCount = null, bool? verifyFalsePositives = null, int? bitArrayLength = null) : base(language)
         {
@@ -19,8 +23,5 @@ namespace SpellChecker
             if (!bitArrayLength.HasValue) bitArrayLength = 10000000;
             BitArrayLength = bitArrayLength.Value;
         }
-        public int HashingFunctionsCount { get; }
-        public bool VerifyFalsePositives { get; }
-        public int BitArrayLength { get; }
     }
 }
