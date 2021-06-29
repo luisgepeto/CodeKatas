@@ -16,6 +16,7 @@ namespace SpellChecker
             // Optimal value determined as per reference and hardcoded error 0.1%
             // https://en.wikipedia.org/wiki/Bloom_filter#Optimal_number_of_hash_functions
             HashingFunctionsCount = hashingFunctionsCount ?? (int)Math.Ceiling(-Math.Log2(0.001));
+            //TODO This information could be found inside a new Language object, for now it might be an overkill
             var dictionarySize = 338882;
             if (Language == Language.Spanish)
                 dictionarySize = 42605;
