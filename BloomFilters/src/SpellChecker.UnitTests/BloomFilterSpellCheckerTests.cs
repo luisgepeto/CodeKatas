@@ -123,7 +123,7 @@ namespace SpellChecker.UnitTests
             {
                 // Assert
                 Assert.IsTrue(ex is ApplicationException);
-                Assert.IsTrue(ex.Message.Contains("The hashing functions count must be between 1 and 16"));
+                Assert.IsTrue(ex.Message.Contains("The hashing functions count must be greater than 0"));
             }
         }
 
