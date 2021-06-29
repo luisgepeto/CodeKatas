@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Diagnostics;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -13,19 +13,19 @@ namespace SpellChecker.UnitTests
         [TestMethod]
         public async Task BloomFilterSpellChecker_FalsePositives_Statistics()
         {
-            // Arrange
-            var options = new BloomFilterSpellCheckerOptions(Language.English, bitArrayLength: 1000);
-            var filter = await BloomFilterSpellChecker.InitializeAsync(options);
-            var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-            var random = new Random();
-            // Act
-            foreach (var i in Enumerable.Range(0, 1000000))
-            {
-                var randomString = new string(Enumerable.Range(0, 5).Select(s => chars[random.Next(chars.Length)]).ToArray());
-                var result = filter.Check(randomString);
-                if (!result.ErrorsByStartIndex.Any())
-                    Debug.WriteLine("Random string found: " + randomString);
-            }
+            //// Arrange
+            //var options = new BloomFilterSpellCheckerOptions(Language.English, bitArrayLength: 1000);
+            //var filter = await BloomFilterSpellChecker.InitializeAsync(options);
+            //var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            //var random = new Random();
+            //// Act
+            //foreach (var i in Enumerable.Range(0, 1000000))
+            //{
+            //    var randomString = new string(Enumerable.Range(0, 5).Select(s => chars[random.Next(chars.Length)]).ToArray());
+            //    var result = filter.Check(randomString);
+            //    if (!result.ErrorsByStartIndex.Any())
+            //        Debug.WriteLine("Random string found: " + randomString);
+            //}
         }
 
         [TestMethod]
@@ -128,6 +128,7 @@ namespace SpellChecker.UnitTests
         {
             // Act
             var options = new BloomFilterSpellCheckerOptions(Language.English, hashingFunctionsCount);
+            // Assert
             Assert.IsNotNull(options);
             Assert.AreEqual(hashingFunctionsCount, options.HashingFunctionsCount);
         }
@@ -141,22 +142,12 @@ namespace SpellChecker.UnitTests
             int maxBitArrayLength = 50;
             var options = new BloomFilterSpellCheckerOptions(Language.English, hashingFunctions, bitArrayLength: maxBitArrayLength);
             var filter = (BloomFilterSpellChecker)await BloomFilterSpellChecker.InitializeAsync(options);
+            var expectedResult = new List<int>() { 36, 34, 29, 27, 29, 31, 18, 12, 45, 1, 46, 49, 1, 46, 28, 41 };
             // Act
             var result = filter.GetWordHash("hello");
             // Assert
             Assert.IsTrue(result.All(r => r < maxBitArrayLength));
-        }
-
-        [TestMethod]
-        public async Task BloomFilterSpellChecker_GetWordHash_UsesRandom()
-        {
-            // Arrange
-            var options = new BloomFilterSpellCheckerOptions(Language.English, bitArrayLength: 10);
-            var filter = (BloomFilterSpellChecker)await BloomFilterSpellChecker.InitializeAsync(options);
-            // Act
-            var result = filter.GetWordHash("hello");
-            // Assert
-            Assert.IsTrue(result.All(r => r < 10));
+            Assert.IsTrue(Enumerable.SequenceEqual(expectedResult.Take(hashingFunctions), result));
         }
     }
 }

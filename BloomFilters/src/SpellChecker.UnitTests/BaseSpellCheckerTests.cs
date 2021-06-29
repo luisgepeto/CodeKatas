@@ -41,7 +41,7 @@ namespace SpellChecker.UnitTests
             // Act
             await checker.LoadSourceDictionaryTask;
             // Assert
-            Assert.AreEqual(3, checker.WordList.Count);
+            Assert.AreEqual(3, checker.WordCount);
             Assert.IsTrue(checker.WordList.Contains("testword1"));
             Assert.IsTrue(checker.WordList.Contains("testword2"));
             Assert.IsFalse(checker.WordList.Contains("testword3"));
@@ -56,10 +56,22 @@ namespace SpellChecker.UnitTests
             // Act
             await checker.LoadSourceDictionaryTask;
             // Assert
-            Assert.AreEqual(3, checker.WordList.Count);
+            Assert.AreEqual(3, checker.WordCount);
             Assert.IsTrue(checker.WordList.Contains("prueba1"));
             Assert.IsTrue(checker.WordList.Contains("prueba2"));
             Assert.IsFalse(checker.WordList.Contains("prueba3"));
+        }
+
+        [TestMethod]
+        public async Task SpellChecker_LoadSourceDictionary_IsFullyLoaded()
+        {
+            // Arrange
+            var options = new TestSpellCheckerOptions(Language.English);
+            var checker = new TestFullSpellChecker(options);
+            // Act
+            await checker.LoadSourceDictionaryTask;
+            // Assert
+            Assert.AreEqual(338882, checker.WordCount);
         }
     }
     public class TestSpellCheckerOptions : SpellCheckerOptions
@@ -82,6 +94,14 @@ namespace SpellChecker.UnitTests
         protected override void LoadWord(string word)
         {
             WordList.Add(word);
+        }
+    }
+    public class TestFullSpellChecker : TestSpellChecker
+    {
+        public TestFullSpellChecker(SpellCheckerOptions options) : base(options) { }
+        protected override string GetSourceDictionaryFilePath()
+        {
+            return $"../../../../SpellChecker.Demo/SourceDictionaries/wordlist.{_options.Language.GetDescription()}.txt";
         }
     }
 }

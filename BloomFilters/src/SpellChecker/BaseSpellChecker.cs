@@ -8,12 +8,14 @@ namespace SpellChecker
 {
     public abstract class BaseSpellChecker : ISpellChecker
     {
+        public int WordCount { get; private set; }
         protected SpellCheckerOptions _options;
+
         protected BaseSpellChecker(SpellCheckerOptions options)
         {
             _options = options;
         }
-        protected string GetSourceDictionaryFilePath()
+        protected virtual string GetSourceDictionaryFilePath()
         {
             return $"./SourceDictionaries/wordlist.{_options.Language.GetDescription()}.txt";
         }
@@ -30,6 +32,7 @@ namespace SpellChecker
                     //TODO Should we care about multiple words in the same line?
                     //TODO Should we care about lower case and upper case differences, as well as culture differences?
                     LoadWord(nextLine.Trim().ToLowerInvariant());
+                    WordCount++;
                 }
             }
             while (nextLine != null);

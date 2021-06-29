@@ -64,10 +64,7 @@ namespace SpellChecker
             using MD5 md5 = MD5.Create();
             var inputBytes = Encoding.ASCII.GetBytes(word);
             var md5Hash = md5.ComputeHash(inputBytes);
-            //IMPORTANT GetHashCode is not consistent across executions
-            var secondHash = new Random(word.GetHashCode()).Next(0, _bitArrayLength);
-            //TODO Validate since secondHash * h can generate a runtime exception
-            return md5Hash.Take(_hashingFunctionsCount).Select(h => (secondHash * h) % _bitArrayLength).ToList();
+            return md5Hash.Take(_hashingFunctionsCount).Select((h, i) => new Random(h * i).Next(0, _bitArrayLength)).ToList();
         }
     }
 }

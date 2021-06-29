@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -11,6 +11,15 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SpellChecker\SpellChecker.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="SourceDictionaries\wordlist.en.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="SourceDictionaries\wordlist.es.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -30,7 +31,12 @@ namespace SpellChecker.Demo
         public static async Task CheckSpelling(DemoOptions demoOptions)
         {
             var bloomFilterOptions = new BloomFilterSpellCheckerOptions(demoOptions.ParsedLanguage);
+            var watch = new Stopwatch();
+            watch.Start();
+            Console.WriteLine("Initializing bloom filter...");
             ISpellChecker filter = await BloomFilterSpellChecker.InitializeAsync(bloomFilterOptions);
+            watch.Stop();
+            Console.WriteLine($"Finished initializing bloom filter with {filter.WordCount} words after {watch.ElapsedMilliseconds}ms...");
             var result = filter.Check(demoOptions.Text);
             if (!result.ErrorsByStartIndex.Any())
                 Console.WriteLine("Your text was error free! Congratulations!");
