@@ -17,7 +17,7 @@ Play with using different numbers of hashes, and with different bitmap sizes.
 Part two of the exercise is optional. Try generating random 5-character words and feeding them in to your spell checker. For each word that it says it OK, look it up in the original dictionary. See how many false positives you get.
 
 ## Analysis Summary
-FalsePositiveRate,BitArrayLength,InitializationMilliseconds,HashingFunctions
+FalsePositiveRate,BitArrayLength,InitializationMilliseconds,HashingFunctions\
 0%,10000000,2707,5\
 0%,10000000,3124,6\
 0%,10000000,3847,7\
