@@ -27,7 +27,7 @@ namespace SpellChecker.UnitTests
         public async Task BloomFilterSpellChecker_IsVerifyNotSet_FalsePositive_ReturnsTrue()
         {
             // Arrange
-            var options = new BloomFilterSpellCheckerOptions(Language.English, bitArrayLength: 5, verifyFalsePositives: false);
+            var options = new BloomFilterSpellCheckerOptions(Language.English, bitArrayLength: 1, verifyFalsePositives: false);
             var filter = (BloomFilterSpellChecker)await BloomFilterSpellChecker.InitializeAsync(options);
             var stringToCheck = "hi";
             // Act
